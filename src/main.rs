@@ -26,7 +26,7 @@ fn main() {
         println!("Position of entity {}: ({}, {})", entity,  position.x, position.y);
     });
     
-    world.query_mut::<Position>(|_, position| {
+    world.query_mut::<Position>(|_t, position| {
         position.x += 1.0;
         position.y += 1.0;
     });
