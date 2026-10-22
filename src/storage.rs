@@ -7,7 +7,7 @@ use crate::entity::Entity;
 
 pub struct Storage {
     sets: HashMap<TypeId, Box<dyn ErasedDenseSet>>,
-    entities: Vec<Entity>,
+    entities: Vec<Option<Entity>>,
 }
 
 impl Storage {
@@ -33,7 +33,9 @@ impl Storage {
                     if self.entities.len() <= item.id as usize {
                         continue;
                     }
-                    f(self.entities[item.id as usize].clone(), &mut item.item);
+                    if let Some(entity) = self.entities[item.id as usize].clone() {
+                        f(entity, &mut item.item);
+                    }
                 }
             }
         }
@@ -48,7 +50,9 @@ impl Storage {
                     if self.entities.len() <= item.id as usize {
                         continue; 
                     }
-                    f(self.entities[item.id as usize].clone(), &item.item);
+                    if let Some(entity) = self.entities[item.id as usize].clone() {
+                        f(entity, &item.item);
+                    }
                 }
             }
         }
@@ -57,31 +61,43 @@ impl Storage {
     pub fn add_entity(&mut self, entity: Entity) {
         let entity_id = entity.id as usize;
         if entity_id < self.entities.len() {
-            if self.entities[entity_id].generation.get() >= entity.generation.get() {
-                return;
+            if let Some(entity) = self.entities[entity_id].clone() {
+                if entity.generation.get() >= entity.generation.get() {
+                    return;
+                }
             }
-            self.entities[entity_id] = entity;
+            self.entities[entity_id] = Some(entity);
         } else {
             let new_size = entity_id + 1;
-            self.entities.resize(new_size, Entity::null());
-            self.entities[entity_id] = entity;
+            self.entities.resize(new_size, None);
+            self.entities[entity_id] = Some(entity);
         }
     }
     
-    pub fn add_component<T: 'static>(&mut self, entity: Entity, component: T) {
+    pub fn add_component<T: 'static>(&mut self, entity: &Entity, component: T) {
         if !self.is_valid_entity(&entity) {
             return; 
         }
 
         if let Some(st) = self.sets.get_mut(&TypeId::of::<T>()) {
             if let Some(dense_set) = st.as_any_mut().downcast_mut::<DenseSet<T>>() {
-                dense_set.add(entity, component);
+                dense_set.add(entity.clone(), component);
             }
         }
     }
     
     fn is_valid_entity(&self, entity: &Entity) -> bool {
-        entity.id < self.entities.len() as u32 && self.entities[entity.id as usize].generation.get() == entity.generation.get()
+        if entity.id >= self.entities.len() as u32  {
+            return false;
+        }
+
+        if let Some(e) = &self.entities[entity.id as usize] {
+            if e.generation.get() != entity.generation.get() {
+                return false;
+            }
+            return true;
+        }
+        false
     }
     
 }

@@ -33,7 +33,7 @@ impl World {
         ret_entity
     }
     
-    pub fn add_component<T: 'static>(&mut self, entity: Entity, component: T) {
+    pub fn add_component<T: 'static>(&mut self, entity: &Entity, component: T) {
         self.storage.add_component(entity, component);
     }
 }

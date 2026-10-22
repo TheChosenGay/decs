@@ -6,8 +6,6 @@ use serde::{Deserialize, Serialize};
 use bincode::{serialize, deserialize};
 
 
-pub const NULL_ENTITY: Entity = Entity { id: 0, generation: Cell::new(0) };
-
 // generation from zero, id from one
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Entity {
@@ -16,13 +14,6 @@ pub struct Entity {
 }
 
 impl Entity {
-    pub fn null() -> Self {
-        NULL_ENTITY
-    }
-    
-    pub fn is_null(&self) -> bool {
-        self.id == 0
-    }
 
     pub fn to_bytes(&self) -> Vec<u8> {
         serialize(self).unwrap()
@@ -64,11 +55,11 @@ impl EntitySpawner {
     }
     
     fn generate_entity(&mut self) -> Entity {
-        self.entity_id += 1;
-        self.avaliable_entities.push_back(Entity {
+        let ret = Entity {
             id: self.entity_id,
             generation: Cell::new(0),
-        });
-        self.avaliable_entities.pop_front().unwrap()
+        };
+        self.entity_id += 1;
+        ret
     }
 }
