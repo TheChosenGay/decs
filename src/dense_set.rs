@@ -26,6 +26,7 @@ impl<T> DenseSet<T> {
     
     pub fn add(&mut self, entity: Entity, component: T) {
         self.dense.push(DenseItem::<T>::new(entity.id as u64, component));
+        println!("Added component to entity: {}", entity);
     }
 }
 
