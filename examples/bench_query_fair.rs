@@ -12,7 +12,10 @@ use std::hint::black_box;
 use std::time::Instant;
 
 use decs::world::World;
+use decs::Component;
+use decs_macro::Component;
 
+#[derive(Component)]
 struct Position {
     x: f32,
     y: f32,

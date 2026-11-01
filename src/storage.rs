@@ -4,6 +4,9 @@ use std::any::TypeId;
 use crate::entity::Entity;
 
 
+pub trait Component {
+
+}
 
 pub struct Storage {
     sets: HashMap<TypeId, Box<dyn ErasedDenseSet>>,
@@ -14,19 +17,19 @@ impl Storage {
     pub fn new() -> Self {
         Self{ sets: HashMap::new(), entities: Vec::new()}
     }
-    pub fn register<T: 'static>(&mut self) {
+    pub fn register<T: Component + 'static>(&mut self) {
         self.sets.entry(TypeId::of::<T>()).or_insert_with(|| Box::new(DenseSet::<T>::new()));
     }
     
-    pub fn get<T: 'static>(&self) -> Option<&DenseSet<T>> {
+    pub fn get<T: Component + 'static>(&self) -> Option<&DenseSet<T>> {
         self.sets.get(&TypeId::of::<T>())?.as_any().downcast_ref::<DenseSet<T>>()
     }
     
-    pub fn get_mut<T: 'static>(&mut self) -> Option<&mut DenseSet<T>> {
+    pub fn get_mut<T: Component + 'static>(&mut self) -> Option<&mut DenseSet<T>> {
         self.sets.get_mut(&TypeId::of::<T>())?.as_any_mut().downcast_mut::<DenseSet<T>>()
     }
     
-    pub fn query_mut<T: 'static>(&mut self, mut f: impl FnMut(Entity, &mut T) -> ()) {
+    pub fn query_mut<T: Component + 'static>(&mut self, mut f: impl FnMut(Entity, &mut T) -> ()) {
         if let Some(st) = self.sets.get_mut(&TypeId::of::<T>()) {
             if let Some(dense_set) =  st.as_any_mut().downcast_mut::<DenseSet<T>>() {
                 for (id, item) in dense_set {
@@ -41,7 +44,7 @@ impl Storage {
         }
     }
     
-    pub fn query<T: 'static>(&self, mut f: impl FnMut(Entity, &T) -> ()) {
+    pub fn query<T: Component + 'static>(&self, mut f: impl FnMut(Entity, &T) -> ()) {
         if let Some(st) = self.sets.get(&TypeId::of::<T>()) {
             let dense_set = st.as_any().downcast_ref::<DenseSet<T>>();
             if let Some(dense_set) = dense_set {
@@ -85,7 +88,7 @@ impl Storage {
         true
     }
     
-    pub fn add_component<T: 'static>(&mut self, entity: &Entity, component: T) {
+    pub fn add_component<T: Component + 'static>(&mut self, entity: &Entity, component: T) {
         if !self.is_valid_entity(&entity) {
             return; 
         }

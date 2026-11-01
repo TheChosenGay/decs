@@ -1,5 +1,7 @@
 use decs::world::*;
+use decs_macro::Component;
 
+#[derive(Component)]
 struct Position {
     x: f32,
     y: f32
@@ -11,6 +13,7 @@ impl Position {
     }
 }
 
+#[derive(Component)]
 struct Velocity {
     x: f32,
     y: f32
@@ -22,12 +25,18 @@ impl Velocity {
     }
 }
 
+#[derive(Component)]
+struct Health {
+    
+}
+
 fn main() {
     let mut world = World::new();
     
 
     world.register::<Position>();
     world.register::<Velocity>();
+    world.register::<Health>();
     
 
     let player = world.add_entity();

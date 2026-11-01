@@ -16,7 +16,17 @@ name = "decs"
 version = "0.1.0"
 dependencies = [
  "bincode",
+ "decs-macro",
  "serde",
+]
+
+[[package]]
+name = "decs-macro"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

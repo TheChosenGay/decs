@@ -1,6 +1,7 @@
 use crate::storage::Storage;
 use crate::entity::Entity;
 use crate::entity::EntitySpawner;
+pub use crate::storage::Component;
 
 pub struct World {
     storage: Storage,
@@ -14,15 +15,15 @@ impl World {
     
 
     
-    pub fn register<T: 'static>(&mut self) {
+    pub fn register<T: Component + 'static>(&mut self) {
         self.storage.register::<T>();
     }
     
-    pub fn query<T: 'static>(&self, mut f: impl FnMut(Entity, &T) -> ()) {
+    pub fn query<T: Component + 'static>(&self, mut f: impl FnMut(Entity, &T) -> ()) {
         self.storage.query::<T>(f);
     }
     
-    pub fn query_mut<T: 'static>(&mut self, f: impl FnMut(Entity, &mut T) -> ()) {
+    pub fn query_mut<T: Component + 'static>(&mut self, f: impl FnMut(Entity, &mut T) -> ()) {
         self.storage.query_mut(f);
     }
     
@@ -41,7 +42,7 @@ impl World {
         self.entity_spawner.recycle_entity(entity);
     }
     
-    pub fn add_component<T: 'static>(&mut self, entity: &Entity, component: T) {
+    pub fn add_component<T: Component + 'static>(&mut self, entity: &Entity, component: T) {
         self.storage.add_component(entity, component);
     }
 }

@@ -7,12 +7,13 @@
 use std::cell::RefCell;
 
 use decs::entity::Entity;
-use decs::world::World;
+use decs::world::*;
+use decs_macro::Component;
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 struct Position(i32);
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 struct Velocity(i32);
 
 /// 保留重复项的收集方式：如果同一实体被存了两份组件，
