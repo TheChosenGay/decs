@@ -26,7 +26,7 @@ impl Storage {
         self.sets.get_mut(&TypeId::of::<T>())?.as_any_mut().downcast_mut::<DenseSet<T>>()
     }
     
-    pub fn query_mut<T: 'static>(&mut self, f: impl Fn(Entity, &mut T) -> ()) {
+    pub fn query_mut<T: 'static>(&mut self, mut f: impl FnMut(Entity, &mut T) -> ()) {
         if let Some(st) = self.sets.get_mut(&TypeId::of::<T>()) {
             if let Some(dense_set) =  st.as_any_mut().downcast_mut::<DenseSet<T>>() {
                 for (id, item) in dense_set {
@@ -41,7 +41,7 @@ impl Storage {
         }
     }
     
-    pub fn query<T: 'static>(&self, f: impl Fn(Entity, &T) -> ()) {
+    pub fn query<T: 'static>(&self, mut f: impl FnMut(Entity, &T) -> ()) {
         if let Some(st) = self.sets.get(&TypeId::of::<T>()) {
             let dense_set = st.as_any().downcast_ref::<DenseSet<T>>();
             if let Some(dense_set) = dense_set {

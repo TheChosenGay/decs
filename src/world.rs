@@ -18,11 +18,11 @@ impl World {
         self.storage.register::<T>();
     }
     
-    pub fn query<T: 'static>(&self, f: impl Fn(Entity, &T) -> ()) {
+    pub fn query<T: 'static>(&self, mut f: impl FnMut(Entity, &T) -> ()) {
         self.storage.query::<T>(f);
     }
     
-    pub fn query_mut<T: 'static>(&mut self, f: impl Fn(Entity, &mut T) -> ()) {
+    pub fn query_mut<T: 'static>(&mut self, f: impl FnMut(Entity, &mut T) -> ()) {
         self.storage.query_mut(f);
     }
     
