@@ -29,12 +29,12 @@ impl Storage {
     pub fn query_mut<T: 'static>(&mut self, f: impl Fn(Entity, &mut T) -> ()) {
         if let Some(st) = self.sets.get_mut(&TypeId::of::<T>()) {
             if let Some(dense_set) =  st.as_any_mut().downcast_mut::<DenseSet<T>>() {
-                for item in dense_set {
-                    if self.entities.len() <= item.id as usize {
+                for (id, item) in dense_set {
+                    if self.entities.len() <= id as usize {
                         continue;
                     }
-                    if let Some(entity) = self.entities[item.id as usize].clone() {
-                        f(entity, &mut item.item);
+                    if let Some(entity) = self.entities[id as usize].clone() {
+                        f(entity, item);
                     }
                 }
             }
@@ -46,12 +46,12 @@ impl Storage {
             let dense_set = st.as_any().downcast_ref::<DenseSet<T>>();
             if let Some(dense_set) = dense_set {
                 // 获取实体这里不太好，后续看能否优化下
-                for item in dense_set {
-                    if self.entities.len() <= item.id as usize {
+                for (id, item) in dense_set {
+                    if self.entities.len() <= id as usize {
                         continue; 
                     }
-                    if let Some(entity) = self.entities[item.id as usize].clone() {
-                        f(entity, &item.item);
+                    if let Some(entity) = self.entities[id as usize].clone() {
+                        f(entity, item);
                     }
                 }
             }
@@ -74,6 +74,17 @@ impl Storage {
         }
     }
     
+    pub fn remove_entity(&mut self, entity: Entity) -> bool {
+        if !self.is_valid_entity(&entity) {
+            return false;
+        }
+        self.entities[entity.id as usize] = None;
+        for set in self.sets.values_mut() {
+            set.remove(entity.id);
+        }
+        true
+    }
+    
     pub fn add_component<T: 'static>(&mut self, entity: &Entity, component: T) {
         if !self.is_valid_entity(&entity) {
             return; 
@@ -81,7 +92,7 @@ impl Storage {
 
         if let Some(st) = self.sets.get_mut(&TypeId::of::<T>()) {
             if let Some(dense_set) = st.as_any_mut().downcast_mut::<DenseSet<T>>() {
-                dense_set.add(entity.clone(), component);
+                dense_set.add(entity.id as u32, component);
             }
         }
     }

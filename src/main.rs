@@ -57,5 +57,27 @@ fn main() {
     world.query::<Velocity>(|entity, velocity| {
         println!("Velocity of entity {}: ({}, {})", entity,  velocity.x, velocity.y);
     });
+    
+    world.query_mut::<Position>(|entity, pos| {
+        pos.x += 1.0;
+        pos.y += 1.0;
+        println!("Position of entity {}: ({}, {})", entity,  pos.x, pos.y);
+    });
+    
+    let monster = world.add_entity();
+    world.add_component(&monster, Position::new(10.0, 10.0));
+    
+    world.query::<Position>(|entity, pos| {
+        println!("Position of entity {}: ({}, {})", entity,  pos.x, pos.y);
+    });
+    
+    world.remove_entity(player);
+    
+    let player2 = world.add_entity();
+    world.add_component(&player2, Position::new(0.0, 11.1));
+    
+    world.query::<Position>(|entity, pos| {
+        println!("Position of entity {}: ({}, {})", entity,  pos.x, pos.y);
+    });
 }
 
