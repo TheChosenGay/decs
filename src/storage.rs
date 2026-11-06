@@ -69,7 +69,7 @@ impl Storage {
         let entity_id = entity.id as usize;
         if entity_id < self.entities.len() {
             if let Some(entity) = self.entities[entity_id].clone() {
-                if entity.generation.get() >= entity.generation.get() {
+                if entity.generation >= entity.generation {
                     return;
                 }
             }
@@ -114,7 +114,7 @@ impl Storage {
         }
 
         if let Some(e) = &self.entities[entity.id as usize] {
-            if e.generation.get() != entity.generation.get() {
+            if e.generation != entity.generation {
                 return false;
             }
             return true;
