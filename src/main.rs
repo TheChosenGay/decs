@@ -98,5 +98,17 @@ fn main() {
     world.query::<(Position, Velocity)>(|entity, (pos, vel)|{
         println!("Position of entity {}: ({}, {}) Velocity: ({}, {})", entity,  pos.x, pos.y, vel.x, vel.y);
     });
+    
+    world.query_mut::<(Position, Velocity)>(|entity, (pos, vel)|{
+        println!("Position of entity {}: ({}, {}) Velocity: ({}, {})", entity,  pos.x, pos.y, vel.x, vel.y);
+        pos.x += 1.0;
+        pos.y += 1.0;
+        vel.x += 1.0;
+        vel.y += 1.0;
+    });
+
+    world.query::<(Position, Velocity)>(|entity, (pos, vel)|{
+        println!("Position of entity {}: ({}, {}) Velocity: ({}, {})", entity,  pos.x, pos.y, vel.x, vel.y);
+    });
 }
 
