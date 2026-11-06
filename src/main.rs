@@ -27,7 +27,7 @@ impl Velocity {
 
 #[derive(Component)]
 struct Health {
-    
+   value: f32 
 }
 
 fn main() {
@@ -42,6 +42,7 @@ fn main() {
     let player = world.add_entity();
     world.add_component(&player, Position::new(0.0, 0.0));
     world.add_component(&player, Velocity::new(1.0, 2.0));
+    world.add_component(&player, Health { value: 100.0 });
     
 
     world.query::<Position>(|entity, position| {
@@ -75,18 +76,27 @@ fn main() {
     
     let monster = world.add_entity();
     world.add_component(&monster, Position::new(10.0, 10.0));
+    world.add_component(&monster, Health{value: 100.0});
     
     world.query::<Position>(|entity, pos| {
         println!("Position of entity {}: ({}, {})", entity,  pos.x, pos.y);
     });
     
-    world.remove_entity(player);
     
     let player2 = world.add_entity();
     world.add_component(&player2, Position::new(0.0, 11.1));
+    world.add_component(&player2, Velocity::new(1.0, 2.0));
     
     world.query::<Position>(|entity, pos| {
         println!("Position of entity {}: ({}, {})", entity,  pos.x, pos.y);
+    });
+    
+    world.query::<(Position, Health)>(|entity, (pos, h)|{
+        println!("Position of entity {}: ({}, {}) Health: {:?}", entity,  pos.x, pos.y, h.value);
+    });
+    
+    world.query::<(Position, Velocity)>(|entity, (pos, vel)|{
+        println!("Position of entity {}: ({}, {}) Velocity: ({}, {})", entity,  pos.x, pos.y, vel.x, vel.y);
     });
 }
 

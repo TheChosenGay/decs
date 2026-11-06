@@ -29,6 +29,10 @@ impl Storage {
         self.sets.get_mut(&TypeId::of::<T>())?.as_any_mut().downcast_mut::<DenseSet<T>>()
     }
     
+    pub fn get_entities(&self) -> &Vec<Option<Entity>> {
+        &self.entities    
+    }
+    
     pub fn query_mut<T: Component + 'static>(&mut self, mut f: impl FnMut(Entity, &mut T) -> ()) {
         if let Some(st) = self.sets.get_mut(&TypeId::of::<T>()) {
             if let Some(dense_set) =  st.as_any_mut().downcast_mut::<DenseSet<T>>() {

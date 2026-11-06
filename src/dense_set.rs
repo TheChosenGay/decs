@@ -22,6 +22,28 @@ impl<T> DenseSet<T> {
         self.add_to_sparce(entity, (self.dense_sparse_map_arr.len() - 1) as u32);
     }
     
+    pub fn get(&self, entity: u32) -> Option<&T> {
+        if self.sparse.len() <= entity as usize || self.sparse[entity as usize].is_none() {
+            return None;
+        }
+        let idx = self.sparse[entity as usize].unwrap();
+        if idx >= self.dense.len() as u32 {
+            return None;
+        }
+        return Some(&self.dense[idx as usize]);
+    }
+    
+    pub fn get_mut(&mut self, entity: u32) -> Option<&mut T> {
+        if self.sparse.len() <= entity as usize || self.sparse[entity as usize].is_none() {
+            return None;
+        }
+        let idx = self.sparse[entity as usize].unwrap();
+        if idx >= self.dense.len() as u32 {
+            return None;
+        }
+        return Some(&mut self.dense[idx as usize]);
+    }
+    
     // 如果存在，删除返回true， 如果不存在返回false
     pub fn remove(&mut self, entity: u32) -> bool {
         if self.sparse.len() <= entity as usize || self.sparse[entity as usize].is_none() {

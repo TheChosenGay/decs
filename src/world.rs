@@ -19,12 +19,14 @@ impl World {
         self.storage.register::<T>();
     }
     
-    pub fn query<T: Component + 'static>(&self, mut f: impl FnMut(Entity, &T) -> ()) {
-        self.storage.query::<T>(f);
+    #[allow(unused_mut)]
+    pub fn query<Q: Query>(&self, mut f: impl for<'a>FnMut(Entity, Q::Item<'a>) -> ()) {
+        Q::for_each(self,f);
     }
     
-    pub fn query_mut<T: Component + 'static>(&mut self, f: impl FnMut(Entity, &mut T) -> ()) {
-        self.storage.query_mut(f);
+    #[allow(unused_mut)]
+    pub fn query_mut<Q: QueryMut>(&mut self, mut f: impl for<'a>FnMut(Entity, Q::Item<'a>) -> ()) {
+        Q::for_each(self,f);
     }
     
     pub fn add_entity(&mut self) -> Entity {
@@ -46,3 +48,86 @@ impl World {
         self.storage.add_component(entity, component);
     }
 }
+
+pub trait Query {
+    type Item<'a>;
+    fn for_each<F>(world: &World, f: F)
+        where F: for<'a> FnMut(Entity, Self::Item<'a>);
+}
+
+// 为所有的component实现for each功能
+impl <T: Component + 'static> Query for T {
+    type Item<'a> = &'a T;
+    fn for_each<F>(world: &World, f: F)
+        where F: for<'a> FnMut(Entity, Self::Item<'a>)
+    {
+        world.storage.query::<T>(f);
+    }
+    
+}
+
+pub trait QueryMut {
+    type Item<'a>; 
+    fn for_each<F>(world: &mut World, f: F)
+        where F: for<'a> FnMut(Entity, Self::Item<'a>);
+}
+
+impl <T: Component + 'static> QueryMut for T {
+    type Item<'a> = &'a mut T;
+    fn for_each<F>(world: &mut World, f: F)
+        where F: for<'a> FnMut(Entity, Self::Item<'a>)
+    {
+        world.storage.query_mut::<T>(f);
+    }
+}
+
+macro_rules! impl_query_tuples {
+    ($($t:ident),+) => {
+        impl_query_tuples!(@go $($t),+);
+    };
+    
+    (@go $head:ident, $next:ident) => {
+        impl_query_tuples!(@emit $head, $next);
+    };
+    
+    (@go $head:ident, $next:ident, $($rest:ident),+) => {
+        impl_query_tuples!(@emit $head, $next, $($rest),+);
+        impl_query_tuples!(@go $next, $($rest),+);
+    };
+
+    (@emit $head:ident, $($tail:ident),+) => {
+        impl <$head: Component + 'static, $($tail: Component + 'static),+> Query for ($head, $($tail),+) {
+            type Item<'a> = (&'a $head, $(&'a $tail),+);
+            
+            fn for_each<Visit>(world: &World, mut f: Visit)
+                where Visit: for<'a> FnMut(Entity, Self::Item<'a>)
+            {
+                let Some(head_set) = world.storage.get::<$head>() else {
+                    return;
+                };
+                $(
+                    let Some($tail) = world.storage.get::<$tail>() else {
+                        return;
+                    };
+                )+
+                    
+                for (id, h) in head_set {
+                    if world.storage.get_entities().len() <= id as usize {
+                        continue;
+                    }
+                    let Some(entity) = &world.storage.get_entities()[id as usize] else {
+                       continue; 
+                    };
+                    
+                    if let ($(Some($tail),)+) = ($($tail.get(id),)+) {
+                        f(entity.clone(), (h, $($tail),+));
+                    }
+                }
+            }
+            
+        }
+
+    };
+}
+
+impl_query_tuples!(A, B, C, D, E, F, G, H);
