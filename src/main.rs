@@ -33,12 +33,6 @@ struct Health {
 fn main() {
     let mut world = World::new();
     
-
-    world.register::<Position>();
-    world.register::<Velocity>();
-    world.register::<Health>();
-    
-
     let player = world.add_entity();
     world.add_component(&player, Position::new(0.0, 0.0));
     world.add_component(&player, Velocity::new(1.0, 2.0));

@@ -92,6 +92,10 @@ impl Storage {
         true
     }
     
+    pub fn has_component<T: Component + 'static>(&self) -> bool {
+        self.sets.contains_key(&TypeId::of::<T>())
+    }
+    
     pub fn add_component<T: Component + 'static>(&mut self, entity: &Entity, component: T) {
         if !self.is_valid_entity(&entity) {
             return; 
