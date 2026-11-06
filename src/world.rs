@@ -3,6 +3,7 @@ use crate::entity::Entity;
 use crate::entity::EntitySpawner;
 pub use crate::storage::Component;
 pub use crate::query::{Query, QueryMut};
+pub use crate::bundle::Bundle;
 
 pub struct World {
     storage: Storage,
@@ -44,12 +45,18 @@ impl World {
         self.entity_spawner.recycle_entity(entity);
     }
     
-    pub fn add_component<T: Component + 'static>(&mut self, entity: &Entity, component: T) {
+    pub fn add_component<T:  Component + 'static>(&mut self, entity: &Entity, component: T) {
         if !self.storage.has_component::<T>() {
             self.storage.register::<T>();
             return;
         }
         self.storage.add_component(entity, component);
+    }
+    
+    pub fn spawn<B: Bundle + 'static>(&mut self, bundle: B) -> Entity{
+        let entity = self.add_entity();
+        bundle.add_to(self, &entity);
+        entity
     }
     
     pub(crate) fn get_storage(&self) -> &Storage {

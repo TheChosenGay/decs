@@ -104,5 +104,14 @@ fn main() {
     world.query::<(Position, Velocity)>(|entity, (pos, vel)|{
         println!("Position of entity {}: ({}, {}) Velocity: ({}, {})", entity,  pos.x, pos.y, vel.x, vel.y);
     });
+    
+    let test_player = world.spawn((Position::new(0.0, 0.0), Velocity::new(1.0, 2.0), Health { value: 100.0 }));
+    world.remove_entity(test_player);
+    
+    let test_player = world.spawn((Position::new(0.0, 0.0), Velocity::new(1.0, 2.0), Health { value: 100.0 }));
+
+    world.query::<(Position, Velocity, Health)>(|entity, (pos, vel, h)|{
+        println!("Position of entity {}: ({}, {}) Velocity: ({}, {}) Health: {:?}", entity,  pos.x, pos.y, vel.x, vel.y, h.value);
+    });
 }
 
