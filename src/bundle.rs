@@ -26,9 +26,9 @@ macro_rules! impl_bundle_tuples {
             #[allow(non_snake_case)]
             fn add_to(self, world: &mut World, entity: &Entity) {
                 let ($head, $($rest),+) = self;
-                world.get_storage_mut().add_component::<$head>(entity, $head);
+                world.add_component::<$head>(entity, $head);
                 $(
-                    world.get_storage_mut().add_component(entity, $rest);
+                    world.add_component(entity, $rest);
                 )+
             }
         }
