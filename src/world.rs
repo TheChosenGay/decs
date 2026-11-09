@@ -48,7 +48,6 @@ impl World {
     pub fn add_component<T:  Component + 'static>(&mut self, entity: &Entity, component: T) {
         if !self.storage.has_component::<T>() {
             self.storage.register::<T>();
-            return;
         }
         self.storage.add_component(entity, component);
     }
