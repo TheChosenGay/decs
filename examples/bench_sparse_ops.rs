@@ -14,10 +14,9 @@ use std::collections::VecDeque;
 use std::hint::black_box;
 use std::time::Instant;
 
+use decs::Component;
 use decs::entity::Entity;
 use decs::world::World;
-use decs::Component;
-use decs_macro::Component;
 
 #[derive(Component)]
 struct Position {

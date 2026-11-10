@@ -1,34 +1,37 @@
-use crate::world::World;
 use crate::entity::Entity;
 use crate::storage::Component;
+use crate::world::World;
 
 pub trait Query {
     type Item<'a>;
     fn for_each<F>(world: &World, f: F)
-        where F: for<'a> FnMut(Entity, Self::Item<'a>);
+    where
+        F: for<'a> FnMut(Entity, Self::Item<'a>);
 }
 
 // 为所有的component实现for each功能
-impl <T: Component + 'static> Query for T {
+impl<T: Component + 'static> Query for T {
     type Item<'a> = &'a T;
     fn for_each<F>(world: &World, f: F)
-        where F: for<'a> FnMut(Entity, Self::Item<'a>)
+    where
+        F: for<'a> FnMut(Entity, Self::Item<'a>),
     {
         world.get_storage().query::<T>(f);
     }
-    
 }
 
 pub trait QueryMut {
-    type Item<'a>; 
+    type Item<'a>;
     fn for_each<F>(world: &mut World, f: F)
-        where F: for<'a> FnMut(Entity, Self::Item<'a>);
+    where
+        F: for<'a> FnMut(Entity, Self::Item<'a>);
 }
 
-impl <T: Component + 'static> QueryMut for T {
+impl<T: Component + 'static> QueryMut for T {
     type Item<'a> = &'a mut T;
     fn for_each<F>(world: &mut World, f: F)
-        where F: for<'a> FnMut(Entity, Self::Item<'a>)
+    where
+        F: for<'a> FnMut(Entity, Self::Item<'a>),
     {
         world.get_storage_mut().query_mut::<T>(f);
     }
@@ -38,11 +41,11 @@ macro_rules! impl_query_tuples {
     ($($t:ident),+) => {
         impl_query_tuples!(@go $($t),+);
     };
-    
+
     (@go $head:ident, $next:ident) => {
         impl_query_tuples!(@emit $head, $next);
     };
-    
+
     (@go $head:ident, $next:ident, $($rest:ident),+) => {
         impl_query_tuples!(@emit $head, $next, $($rest),+);
         impl_query_tuples!(@go $next, $($rest),+);
@@ -52,7 +55,7 @@ macro_rules! impl_query_tuples {
         // 为元组实现Query
         impl <$head: Component + 'static, $($tail: Component + 'static),+> Query for ($head, $($tail),+) {
             type Item<'a> = (&'a $head, $(&'a $tail),+);
-            
+
             fn for_each<Visit>(world: &World, mut f: Visit)
                 where Visit: for<'a> FnMut(Entity, Self::Item<'a>)
             {
@@ -64,21 +67,21 @@ macro_rules! impl_query_tuples {
                         return;
                     };
                 )+
-                    
+
                 for (id, h) in head_set {
                     if world.get_storage().get_entities().len() <= id as usize {
                         continue;
                     }
                     let Some(entity) = &world.get_storage().get_entities()[id as usize] else {
-                       continue; 
+                       continue;
                     };
-                    
+
                     if let ($(Some($tail),)+) = ($($tail.get(id),)+) {
                         f(entity.clone(), (h, $($tail),+));
                     }
                 }
             }
-            
+
         }
 
         impl <$head: Component + 'static, $($tail: Component + 'static),+> QueryMut for ($head, $($tail),+) {

@@ -8,7 +8,6 @@ use std::cell::RefCell;
 
 use decs::entity::Entity;
 use decs::world::*;
-use decs_macro::Component;
 
 #[derive(Debug, Component)]
 struct Position(i32);
@@ -48,7 +47,9 @@ fn expected(entities: &[(Entity, i32)]) -> Vec<(String, i32)> {
 }
 
 fn has_entry(entries: &[(String, i32)], entity: &Entity) -> bool {
-    entries.iter().any(|(owner, _)| owner == &entity.to_string())
+    entries
+        .iter()
+        .any(|(owner, _)| owner == &entity.to_string())
 }
 
 fn value_of(entries: &[(String, i32)], entity: &Entity) -> Option<i32> {
@@ -95,10 +96,7 @@ fn adding_same_component_twice_keeps_only_latest_value() {
     world.add_component(&entity, Position(1));
     world.add_component(&entity, Position(99));
 
-    assert_eq!(
-        collect_positions(&world),
-        vec![(entity.to_string(), 99)]
-    );
+    assert_eq!(collect_positions(&world), vec![(entity.to_string(), 99)]);
 }
 
 #[test]
@@ -211,10 +209,7 @@ fn stale_handle_cannot_add_component_after_recycle() {
     assert_eq!(collect_positions(&world), Vec::new());
 
     world.add_component(&recycled, Position(456));
-    assert_eq!(
-        collect_positions(&world),
-        vec![(recycled.to_string(), 456)]
-    );
+    assert_eq!(collect_positions(&world), vec![(recycled.to_string(), 456)]);
 }
 
 #[test]
@@ -227,7 +222,11 @@ fn entity_without_components_is_recycled() {
     world.remove_entity(first);
 
     let second = world.add_entity();
-    assert_ne!(first_text, second.to_string(), "应复用同一 ID 并递增 generation");
+    assert_ne!(
+        first_text,
+        second.to_string(),
+        "应复用同一 ID 并递增 generation"
+    );
     assert!(
         second.to_string().contains("generation: 1"),
         "second entity should be generation 1, got {second}"
@@ -236,9 +235,7 @@ fn entity_without_components_is_recycled() {
 
 #[test]
 fn repeated_add_remove_churn_matches_model() {
-    let (mut world, initial) = world_with_entities(
-        &(0..128).map(|i| i * 3).collect::<Vec<_>>(),
-    );
+    let (mut world, initial) = world_with_entities(&(0..128).map(|i| i * 3).collect::<Vec<_>>());
 
     // 第一轮：删除下标为 3 的倍数的实体。
     let mut live: Vec<(Entity, i32)> = Vec::new();
@@ -266,4 +263,14 @@ fn repeated_add_remove_churn_matches_model() {
         world.remove_entity(entity);
     }
     assert_eq!(collect_positions(&world), expected(&live));
+}
+
+#[test]
+fn spawn_accepts_one_component() {
+    let mut world = World::new();
+    let bare = world.spawn(Position(7));
+    let one = world.spawn((Velocity(8),));
+
+    assert_eq!(value_of(&collect_positions(&world), &bare), Some(7));
+    assert_eq!(value_of(&collect_velocities(&world), &one), Some(8));
 }

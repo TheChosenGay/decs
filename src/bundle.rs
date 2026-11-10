@@ -6,6 +6,18 @@ pub trait Bundle {
     fn add_to(self, world: &mut World, entity: &Entity);
 }
 
+impl<T: Component + 'static> Bundle for T {
+    fn add_to(self, world: &mut World, entity: &Entity) {
+        world.add_component(entity, self);
+    }
+}
+
+impl<T: Component + 'static> Bundle for (T,) {
+    fn add_to(self, world: &mut World, entity: &Entity) {
+        let (component,) = self;
+        world.add_component(entity, component);
+    }
+}
 
 macro_rules! impl_bundle_tuples {
     ($($t:ident),+) => {
@@ -35,4 +47,6 @@ macro_rules! impl_bundle_tuples {
     };
 }
 
-impl_bundle_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z);
+impl_bundle_tuples!(
+    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
+);

@@ -11,9 +11,8 @@ use std::cell::Cell;
 use std::hint::black_box;
 use std::time::Instant;
 
-use decs::world::World;
 use decs::Component;
-use decs_macro::Component;
+use decs::world::World;
 
 #[derive(Component)]
 struct Position {
@@ -49,10 +48,21 @@ fn main() {
     world.register::<Position>();
     for i in 0..n {
         let e = world.add_entity();
-        world.add_component(&e, Position { x: i as f32, y: 1.0 });
+        world.add_component(
+            &e,
+            Position {
+                x: i as f32,
+                y: 1.0,
+            },
+        );
     }
 
-    let baseline: Vec<Position> = (0..n).map(|i| Position { x: i as f32, y: 1.0 }).collect();
+    let baseline: Vec<Position> = (0..n)
+        .map(|i| Position {
+            x: i as f32,
+            y: 1.0,
+        })
+        .collect();
 
     println!("=== n = {n}，遍历单个 Position 组件 ===");
 
